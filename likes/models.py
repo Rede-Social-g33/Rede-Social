@@ -8,9 +8,9 @@ class Like(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="likes"
+        "users.User", on_delete=models.CASCADE, related_name="likes_user"
     )
 
     post = models.ForeignKey(
-        "posts.Post", on_delete=models.CASCADE, related_name="likes"
+        "posts.Post", on_delete=models.CASCADE, related_name="likes_post"
     )

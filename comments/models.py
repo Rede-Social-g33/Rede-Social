@@ -9,9 +9,9 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="comments"
+        "users.User", on_delete=models.CASCADE, related_name="comments_user"
     )
 
     post = models.ForeignKey(
-        "posts.Post", on_delete=models.CASCADE, related_name="comments"
+        "posts.Post", on_delete=models.CASCADE, related_name="comments_post"
     )
