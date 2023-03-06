@@ -10,9 +10,9 @@ class Connection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="user_id"
+        "users.User", on_delete=models.CASCADE, related_name="connects"
     )
 
     friend = models.ForeignKey(
-        "users.user", on_delete=models.CASCADE, related_name="friend_id"
+        "users.User", on_delete=models.CASCADE, related_name="friend"
     )
