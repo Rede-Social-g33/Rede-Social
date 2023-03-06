@@ -1,3 +1,15 @@
 from django.db import models
 
-# Create your models here.
+
+class Post(models.Model):
+    class Meta:
+        ordering = ["id"]
+
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_public = models.BooleanField(default=True)
+
+    user = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="posts"
+    )
