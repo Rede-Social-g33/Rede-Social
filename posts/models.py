@@ -13,3 +13,6 @@ class Post(models.Model):
     user = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="posts"
     )
+
+    def __str__(self) -> str:
+        return f"<[{self.id}] - Posted by {self.user.username}"
