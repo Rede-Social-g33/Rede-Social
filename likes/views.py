@@ -3,7 +3,7 @@ from .models import Like
 from .serializer import LikeSerializer
 
 
-class CommentsView(generics.ListCreateAPIView):
+class LikesView(generics.ListCreateAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
 
