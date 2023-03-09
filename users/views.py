@@ -17,3 +17,13 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
 
     lookup_url_kwarg = "user_id"
+
+
+class FriendList(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = UserSerializer
+    
+    def get_queryset(self):
+        user = self.request.user
+        return user.profile.friends.all()
