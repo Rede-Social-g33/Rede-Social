@@ -9,12 +9,14 @@ from .serializers import PostSerializer
 from rest_framework.pagination import PageNumberPagination
 from users.models import User
 from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class PostListCreateView(ListCreateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Post.objects.all().order_by("-created_at")
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = PageNumberPagination
     page_size = 20
 
@@ -23,6 +25,7 @@ class PostListCreateView(ListCreateAPIView):
 
 
 class PostDetailView(RetrieveUpdateDestroyAPIView):
+    authentication_classes = [JWTAuthentication]
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -31,6 +34,7 @@ class PostDetailView(RetrieveUpdateDestroyAPIView):
 
 
 class UserPostDetailView(RetrieveAPIView):
+    authentication_classes = [JWTAuthentication]
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
