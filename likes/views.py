@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 class LikesView(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
 
