@@ -16,3 +16,11 @@ class LikesView(generics.ListCreateAPIView):
         return serializer.save(
             user_id=self.request.user.id, post_id=self.kwargs.get("post_id")
         )
+
+
+class LikesDetailsView(generics.DestroyAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    lookup_url_kwarg = "like_id"
