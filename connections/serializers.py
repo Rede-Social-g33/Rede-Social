@@ -10,7 +10,17 @@ class ConnectionSerializer(serializers.ModelSerializer):
         fields = ["id", "friend", "friendship", "follow", "created_at"]
         read_only_fields = ["id", "friend", "friendship", "follow", "created_at"]
 
-    # def update(self, instance, validated_data):
-    #     instance.follow = validated_data.get("follow", instance.follow)
-    #     instance.save()
-    #     return instance
+
+class FollowerSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
+
+    def get_username(self, obj):
+        return obj.user.username
+
+    def get_user_id(self, obj):
+        return obj.user.id
+
+    class Meta:
+        model = Connection
+        fields = ("id", "username", "user_id")

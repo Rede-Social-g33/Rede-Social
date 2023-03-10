@@ -3,7 +3,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from users.models import User
 from .models import Connection
-from .serializers import ConnectionSerializer
+from .serializers import ConnectionSerializer, FollowerSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import Response, status
 from rest_framework.exceptions import ValidationError
@@ -59,3 +59,14 @@ class FollowView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.follow = False
         instance.save()
+
+
+class FollowerListView(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    serializer_class = FollowerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_id = self.kwargs.get("user_id")
+        user = get_object_or_404(User, id=user_id)
+        return Connection.objects.filter(friend=user, follow=True)
