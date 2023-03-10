@@ -17,8 +17,6 @@ class PostListCreateView(ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Post.objects.all().order_by("-created_at")
     serializer_class = PostSerializer
-    pagination_class = PageNumberPagination
-    page_size = 20
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
