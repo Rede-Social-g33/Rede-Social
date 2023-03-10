@@ -14,7 +14,6 @@ class CommentsSerializer(serializers.ModelSerializer):
 
         return instance
 
-
-class Meta:
-    model: Comment
-    fields = ["id", "text", "created_at", "post_id", "user_id"]
+    class Meta:
+        model = Comment
+        fields = ["id", "text", "created_at", "post_id", "user_id"]
