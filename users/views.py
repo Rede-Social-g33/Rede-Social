@@ -1,6 +1,7 @@
 from rest_framework import generics
 from .models import User
 from .serializers import UserSerializer
+from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
@@ -22,8 +23,11 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class FriendList(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     
     def get_queryset(self):
-        user = self.request.user
-        return user.profile.friends.all()
+        user_obj = get_object_or_404(User, pk=self.kwargs["user_id"])
+        friend_list = user_obj.friend.all()
+
+        return friend_list
