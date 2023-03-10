@@ -15,3 +15,11 @@ class CommentsView(generics.ListCreateAPIView):
         return serializer.save(
             user_id=self.request.user.id, post_id=self.kwargs.get("post_id")
         )
+
+
+class CommentsDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Comment.objects.all()
+    serializer_class = CommentsSerializer
+    lookup_url_kwarg = "comment_id"
