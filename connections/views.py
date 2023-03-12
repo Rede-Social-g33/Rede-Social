@@ -81,8 +81,6 @@ class FriendshipCreate(generics.CreateAPIView):
         friend_id = serializer.validated_data['friend_id']
         status = serializer.validated_data['friendship']
 
-        if user.id == friend_id:
-            raise ValidationError('You cannot add yourself as a friend')
 
         try:
             friend = User.objects.get(id=friend_id)
