@@ -72,17 +72,25 @@ class FollowerListView(generics.ListAPIView):
         return Connection.objects.filter(friend=user, follow=True)
 
 class FriendshipCreate(generics.CreateAPIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = Connection.objects.all()
-    serializer_class = FriendshipSerializer
-    
-    def create(self, request, *args, **kwargs):
-        sender = self.request.user
-        receiver_id = self.kwargs['friend_id']
-        receiver = get_object_or_404(User, pk=receiver_id)
-        
-        friendship = Connection(user=sender, friend=receiver)
-        friendship.save()
-        serializer = FriendshipSerializer(friendship)
-        
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    serializer_class = ConnectionSerializer
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        friend_id = serializer.validated_data['friend_id']
+        status = serializer.validated_data['friendship']
+
+        if user.id == friend_id:
+            raise ValidationError('You cannot add yourself as a friend')
+
+        try:
+            friend = User.objects.get(id=friend_id)
+        except User.DoesNotExist:
+            raise ValidationError('User does not exist')
+
+        connection, created = Connection.objects.get_or_create(user=user, friend=friend, defaults={'friendship': status})
+
+        if not created:
+            connection.status = status
+            connection.save()

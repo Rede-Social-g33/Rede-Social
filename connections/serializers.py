@@ -29,9 +29,10 @@ from rest_framework import serializers
 from .models import Friendship
 
 class FriendshipSerializer(serializers.ModelSerializer):
-    sender_id = serializers.ReadOnlyField(source='user.id')
-    receiver_id = serializers.ReadOnlyField(source='friend.id')
+    friend_id = serializers.IntegerField()
+    friendship = serializers.ChoiceField(choices=Connection.STATUS_CHOICES, default='not_connected')
+    
 
     class Meta:
-        model = Friendship
-        fields = ('id', 'user_id', 'friend_id', 'friendship')
+        model = Connection
+        fields = ('friendship')
