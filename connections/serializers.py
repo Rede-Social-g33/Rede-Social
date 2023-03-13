@@ -25,14 +25,13 @@ class FollowerSerializer(serializers.ModelSerializer):
         model = Connection
         fields = ("id", "username", "user_id")
 
-from rest_framework import serializers
-from .models import Friendship
 
 class FriendshipSerializer(serializers.ModelSerializer):
     friend_id = serializers.IntegerField()
-    friendship = serializers.ChoiceField(choices=Connection.STATUS_CHOICES, default='not_connected')
-    
+    friendship = serializers.ChoiceField(
+        choices=Connection.STATUS_CHOICES, default="not_connected"
+    )
 
     class Meta:
         model = Connection
-        fields = ('friendship')
+        fields = "friendship"
