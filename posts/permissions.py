@@ -1,18 +1,10 @@
 from rest_framework import permissions
-from rest_framework.views import Request, View
-from connections.models import Connection
-from .models import Post
-from django.db.models import Q
+from rest_framework.permissions import BasePermission
 
 
-class IsAuthenticatedOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request: Request, view: View):
-        return (
-            request.method in permissions.SAFE_METHODS or request.user.is_authenticated
-        )
+class IsOwnerOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
 
-
-class IsPostOwner(permissions.BasePermission):
-    def has_object_permission(self, request: Request, view: View, obj: Post) -> bool:
-        print(obj.user, request.user)
-        return obj.user == request.user
+        return obj.owner == request.user

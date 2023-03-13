@@ -3,7 +3,7 @@ from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView,
     ListAPIView,
 )
-from .permissions import IsAuthenticatedOrReadOnly
+from .permissions import IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
 from .models import Post
 from .serializers import PostSerializer
 from rest_framework.pagination import PageNumberPagination
@@ -39,7 +39,7 @@ class PostDetailView(RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     lookup_url_kwarg = "post_id"
 
@@ -49,7 +49,7 @@ class PostDetailView(RetrieveUpdateDestroyAPIView):
             Q(id=post_id, is_public=True)
             | Q(id=post_id, user__friend__user=self.request.user)
         )
-        print(self.queryset)
+
         return self.queryset
 
 

@@ -1,4 +1,5 @@
 from rest_framework import generics
+from posts.permissions import IsOwnerOrReadOnly
 
 from users.permissions import IsUserOwner
 from .models import User
@@ -15,7 +16,7 @@ class UserView(generics.CreateAPIView):
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly, IsUserOwner]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
