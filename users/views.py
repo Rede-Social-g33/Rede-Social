@@ -1,7 +1,5 @@
 from rest_framework import generics
-from posts.permissions import IsOwnerOrReadOnly
-
-from users.permissions import IsUserOwner
+from .permissions import IsOwnerOrReadOnly
 from .models import User
 from .serializers import UserSerializer
 from django.shortcuts import get_object_or_404
