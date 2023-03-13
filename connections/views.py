@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from connections.permissions import IsConnectionsOwner
 from users.models import User
 from .models import Connection
 from .serializers import ConnectionSerializer, FollowerSerializer, FriendshipSerializer
@@ -10,11 +11,11 @@ from rest_framework.exceptions import ValidationError
 import ipdb
 
 
-class FollowView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIView):
+class FollowView(generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
     queryset = User.objects.all()
     serializer_class = ConnectionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConnectionsOwner]
 
     lookup_url_kwarg = "friend_id"
 
