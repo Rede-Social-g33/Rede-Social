@@ -3,7 +3,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from users.models import User
 from .models import Connection
-from .serializers import ConnectionSerializer, FollowerSerializer
+from .serializers import ConnectionSerializer, FollowerSerializer, FriendshipSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import Response, status
 from rest_framework.exceptions import ValidationError
@@ -70,3 +70,25 @@ class FollowerListView(generics.ListAPIView):
         user_id = self.kwargs.get("user_id")
         user = get_object_or_404(User, id=user_id)
         return Connection.objects.filter(friend=user, follow=True)
+
+class FriendshipCreate(generics.CreateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = ConnectionSerializer
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        friend_id = serializer.validated_data['friend_id']
+        status = serializer.validated_data['friendship']
+
+
+        try:
+            friend = User.objects.get(id=friend_id)
+        except User.DoesNotExist:
+            raise ValidationError('User does not exist')
+
+        connection, created = Connection.objects.get_or_create(user=user, friend=friend, defaults={'friendship': status})
+
+        if not created:
+            connection.status = status
+            connection.save()
