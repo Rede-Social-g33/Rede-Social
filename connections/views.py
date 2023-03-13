@@ -8,7 +8,7 @@ from .serializers import ConnectionSerializer, FollowerSerializer, FriendshipSer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import Response, status
 from rest_framework.exceptions import ValidationError
-import ipdb
+from django.db.models import Q
 
 
 class FollowView(generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIView):
@@ -31,7 +31,9 @@ class FollowView(generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIVi
         self.check_self_follow(friend)
 
         # Verificar se já há uma conexão e atualizar o valor de follow para True caso exista
-        connections = Connection.objects.filter(user=self.request.user, friend=friend)
+        connections = Connection.objects.filter(
+            sender=self.request.user, receiver=friend
+        )
 
         if connections.exists():
             connection = connections.first()
@@ -42,14 +44,19 @@ class FollowView(generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIVi
                 serializer.validated_data["follow"] = True
                 self.perform_update(serializer)
         else:
-            serializer.save(user=self.request.user, friend=friend, follow=True)
+            serializer.save(
+                Q(sender=self.request.user, receiver=friend, follow=True)
+                | Q(receiver=self.request.user, sender=friend, follow=True)
+            )
 
     def destroy(self, request, *args, **kwargs):
         friend = self.get_object()
         self.check_self_follow(friend)
 
         try:
-            connection = Connection.objects.get(user=self.request.user, friend=friend)
+            connection = Connection.objects.get(
+                sender=self.request.user, receiver=friend
+            )
         except Connection.DoesNotExist:
             raise ValidationError("You already unfollowed this user")
 
@@ -70,26 +77,72 @@ class FollowerListView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs.get("user_id")
         user = get_object_or_404(User, id=user_id)
-        return Connection.objects.filter(friend=user, follow=True)
+        return Connection.objects.filter(receiver=user, follow=True)
 
-class FriendshipCreate(generics.CreateAPIView):
+
+class FriendshipView(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ConnectionSerializer
+    lookup_field = "friend_id"
+    queryset = Connection.objects.all()
 
     def perform_create(self, serializer):
-        user = self.request.user
-        friend_id = serializer.validated_data['friend_id']
-        status = serializer.validated_data['friendship']
+        friend_id = self.kwargs.get("friend_id")
+        friend = get_object_or_404(User, id=friend_id)
+
+        # Verificar se já há uma conexão e atualizar o valor de follow para True caso exista
+        connections = Connection.objects.filter(
+            Q(sender=self.request.user, receiver=friend, follow=True)
+            | Q(sender=friend, receiver=self.request.user, follow=True)
+        ).first()
+
+        if connections:
+            if connections.friendship == "connected" | "pending":
+                raise ValidationError("You already connected him")
+        else:
+            serializer.save(
+                sender=self.request.user,
+                receiver=friend,
+                follow=True,
+                friendship="pending",
+            )
+
+    def get_queryset(self):
+        list_connections = Connection.objects.filter(
+            Q(sender_id=self.request.user.id, friendship="connected")
+            | Q(receiver_id=self.request.user.id, friendship="connected")
+        )
+
+        return list_connections
 
 
-        try:
-            friend = User.objects.get(id=friend_id)
-        except User.DoesNotExist:
-            raise ValidationError('User does not exist')
+class FriendshipDetailView(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = ConnectionSerializer
+    lookup_url_kwarg = "connection_id"
+    queryset = Connection.objects.all()
 
-        connection, created = Connection.objects.get_or_create(user=user, friend=friend, defaults={'friendship': status})
+    def perform_update(self, serializer):
+        connection_id = self.kwargs.get("connection_id")
+        conection = get_object_or_404(Connection, pk=connection_id)
 
-        if not created:
-            connection.status = status
-            connection.save()
+        print(conection.user_id)
+
+        if conection:
+            if conection.friendship == "connected":
+                raise ValidationError("You already connected him")
+            elif conection.user_id == self.request.user.id:
+                if conection.friendship == "pending":
+                    raise ValidationError("You already peding him")
+                elif conection.friendship == "not_connected":
+                    print("loop+not_conect")
+                    serializer.instance = conection
+                    serializer.validated_data["friendship"] = "pending"
+                    serializer.save()
+
+                    return serializer
+
+            elif conection.friendship == "pending":
+                serializer.save(friendship="connected")

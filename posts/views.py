@@ -25,10 +25,10 @@ class PostListCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         self.queryset = self.queryset.filter(
-            Q(is_public=True)
+            Q(user__connects__receiver=self.request.user)
+            | Q(user__friend__sender=self.request.user)
             | Q(user=self.request.user)
-            | Q(user__friend__user=self.request.user)
-            | Q(user__connects__friend=self.request.user)
+            | Q(is_public=True)
         )
 
         return self.queryset
@@ -44,9 +44,12 @@ class PostDetailView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs.get("post_id")
+
         self.queryset = Post.objects.filter(
             Q(id=post_id, is_public=True)
-            | Q(id=post_id, user__friend__user=self.request.user)
+            | Q(id=post_id, user__friend__sender=self.request.user)
+            | Q(id=post_id, user__connects__receiver=self.request.user)
+            | Q(id=post_id, user=self.request.user)
         )
 
         return self.queryset
@@ -62,11 +65,14 @@ class UserPostDetailView(ListAPIView):
     def get_queryset(self):
         user_obj = get_object_or_404(User, pk=self.kwargs.get("user_id"))
 
-        self.queryset = self.queryset.filter(
-            Q(is_public=True, user=user_obj)
-            | Q(is_public=False, user=self.request.user)
-            | Q(user__friend__user=self.request.user, user=user_obj)
-            | Q(user__connects__friend=self.request.user, user=user_obj)
-        )
+        if user_obj == self.request.user:
+            self.queryset = self.queryset.filter(user=user_obj)
+
+        else:
+            self.queryset = self.queryset.filter(
+                Q(is_public=True, user=user_obj)
+                | Q(user__friend__sender=self.request.user, user=user_obj)
+                | Q(user__connects__receiver=self.request.user, user=user_obj)
+            )
 
         return self.queryset

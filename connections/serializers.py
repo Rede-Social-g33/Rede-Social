@@ -3,12 +3,13 @@ from .models import Connection
 
 
 class ConnectionSerializer(serializers.ModelSerializer):
-    friend = serializers.StringRelatedField()
+    receiver = serializers.StringRelatedField()
+    sender = serializers.StringRelatedField()
 
     class Meta:
         model = Connection
-        fields = ["id", "friend", "friendship", "follow", "created_at"]
-        read_only_fields = ["id", "friend", "friendship", "follow", "created_at"]
+        fields = ["id", "sender", "receiver", "friendship", "follow", "created_at"]
+        read_only_fields = ["id", "friend", "follow", "created_at"]
 
 
 class FollowerSerializer(serializers.ModelSerializer):
@@ -34,4 +35,4 @@ class FriendshipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Connection
-        fields = "friendship"
+        fields = ["friendship", "friend_id"]
