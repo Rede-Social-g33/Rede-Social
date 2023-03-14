@@ -17,10 +17,10 @@ class Connection(models.Model):
     follow = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    user = models.ForeignKey(
+    sender = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="connects"
     )
 
-    friend = models.ForeignKey(
+    receiver = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="friend"
     )

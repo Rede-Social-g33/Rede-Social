@@ -1,4 +1,6 @@
 from rest_framework import generics
+from connections.models import Connection
+from connections.serializers import ConnectionSerializer
 from .permissions import IsOwnerOrReadOnly
 from .models import User
 from .serializers import UserSerializer
@@ -7,7 +9,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
-class UserView(generics.CreateAPIView):
+class UserView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -24,11 +26,12 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class FriendList(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly]
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    queryset = Connection.objects.all()
+    serializer_class = ConnectionSerializer
 
     def get_queryset(self):
-        user_obj = get_object_or_404(User, pk=self.kwargs["user_id"])
-        friend_list = user_obj.friend.all()
+        conections = self.queryset.filter(
+            receiver_id=self.request.user.id, friendship="pending"
+        )
 
-        return friend_list
+        return conections
