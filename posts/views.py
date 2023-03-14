@@ -24,12 +24,18 @@ class PostListCreateView(ListCreateAPIView):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        self.queryset = self.queryset.filter(
-            Q(user__connects__receiver=self.request.user)
-            | Q(user__friend__sender=self.request.user)
-            | Q(user=self.request.user)
-            | Q(is_public=True)
-        )
+        user = User.objects.filter(id=self.request.user.id).first()
+
+        if user:
+            self.queryset = self.queryset.filter(
+                Q(user__connects__receiver=self.request.user)
+                | Q(user__friend__sender=self.request.user)
+                | Q(user=self.request.user)
+                | Q(is_public=True)
+            )
+
+        else:
+            self.queryset = self.queryset.filter(is_public=True)
 
         return self.queryset
 
