@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from connections.permissions import IsConnectionsOwner
 from users.models import User
 from .models import Connection
-from .serializers import ConnectionSerializer, FollowerSerializer, FriendshipSerializer
+from .serializers import ConnectionSerializer, FollowerSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import Response, status
 from rest_framework.exceptions import ValidationError
@@ -75,7 +75,7 @@ class FollowerListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user_id = self.kwargs.get("user_id")
+        user_id = self.request.user.id
         user = get_object_or_404(User, id=user_id)
         return Connection.objects.filter(receiver=user, follow=True)
 
@@ -91,14 +91,16 @@ class FriendshipView(generics.ListCreateAPIView):
         friend_id = self.kwargs.get("friend_id")
         friend = get_object_or_404(User, id=friend_id)
 
-        # Verificar se já há uma conexão e atualizar o valor de follow para True caso exista
+        if friend == self.request.user:
+            raise ValidationError("you can't follow yourself")
+
         connections = Connection.objects.filter(
             Q(sender=self.request.user, receiver=friend, follow=True)
             | Q(sender=friend, receiver=self.request.user, follow=True)
         ).first()
 
         if connections:
-            if connections.friendship == "connected" | "pending":
+            if connections.friendship == "connected" or "pending":
                 raise ValidationError("You already connected him")
         else:
             serializer.save(
