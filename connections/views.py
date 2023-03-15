@@ -77,7 +77,7 @@ class FollowerListView(generics.ListAPIView):
         return Connection.objects.filter(receiver=user, follow=True)
 
 
-class FriendshipView(generics.ListCreateAPIView):
+class FriendshipView(generics.ListCreateAPIView, generics.UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ConnectionSerializer
@@ -97,15 +97,12 @@ class FriendshipView(generics.ListCreateAPIView):
         ).first()
 
         if connections:
-            if connections.friendship == "connected" or "pending":
+            if connections.friendship != "not_connected":
                 raise ValidationError("You already connected him")
             else:
-                serializer.save(
-                    sender=self.request.user,
-                    receiver=friend,
-                    follow=True,
-                    friendship="pending",
-                )
+                serializer.instance = connections
+                serializer.validated_data["friendship"] = "pending"
+                self.perform_update(serializer)
 
     def get_queryset(self):
         list_connections = Connection.objects.filter(
@@ -126,8 +123,6 @@ class FriendshipDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         connection_id = self.kwargs.get("connection_id")
         conection = get_object_or_404(Connection, pk=connection_id)
-
-        print(conection.user_id)
 
         if conection:
             if conection.friendship == "connected":
