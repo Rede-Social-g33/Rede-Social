@@ -104,6 +104,14 @@ class FriendshipView(generics.ListCreateAPIView, generics.UpdateAPIView):
                 serializer.validated_data["friendship"] = "pending"
                 self.perform_update(serializer)
 
+        else:
+            serializer.save(
+                sender=self.request.user,
+                receiver=friend,
+                follow=True,
+                friendship="pending",
+            )
+
     def get_queryset(self):
         list_connections = Connection.objects.filter(
             Q(sender_id=self.request.user.id, friendship="connected")
