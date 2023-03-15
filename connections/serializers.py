@@ -17,10 +17,10 @@ class FollowerSerializer(serializers.ModelSerializer):
     user_id = serializers.SerializerMethodField()
 
     def get_username(self, obj):
-        return obj.user.username
+        return obj.sender.username
 
     def get_user_id(self, obj):
-        return obj.user.id
+        return obj.sender.id
 
     class Meta:
         model = Connection
