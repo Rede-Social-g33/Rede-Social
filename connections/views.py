@@ -99,13 +99,13 @@ class FriendshipView(generics.ListCreateAPIView):
         if connections:
             if connections.friendship == "connected" or "pending":
                 raise ValidationError("You already connected him")
-        else:
-            serializer.save(
-                sender=self.request.user,
-                receiver=friend,
-                follow=True,
-                friendship="pending",
-            )
+            else:
+                serializer.save(
+                    sender=self.request.user,
+                    receiver=friend,
+                    follow=True,
+                    friendship="pending",
+                )
 
     def get_queryset(self):
         list_connections = Connection.objects.filter(
