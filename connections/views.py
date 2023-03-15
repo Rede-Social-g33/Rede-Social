@@ -44,10 +44,7 @@ class FollowView(generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIVi
                 serializer.validated_data["follow"] = True
                 self.perform_update(serializer)
         else:
-            serializer.save(
-                Q(sender=self.request.user, receiver=friend, follow=True)
-                | Q(receiver=self.request.user, sender=friend, follow=True)
-            )
+            serializer.save(sender=self.request.user, receiver=friend, follow=True)
 
     def destroy(self, request, *args, **kwargs):
         friend = self.get_object()
