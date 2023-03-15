@@ -135,7 +135,7 @@ class FriendshipDetailView(generics.RetrieveUpdateDestroyAPIView):
         if conection:
             if conection.friendship == "connected":
                 raise ValidationError("You already connected him")
-            elif conection.user_id == self.request.user.id:
+            elif conection.sender_id == self.request.user.id:
                 if conection.friendship == "pending":
                     raise ValidationError("You already peding him")
                 elif conection.friendship == "not_connected":
